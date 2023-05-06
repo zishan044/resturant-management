@@ -14,7 +14,7 @@ func GetInvoice() gin.HandlerFunc {
 	}
 }
 
-func CreateInvoices() gin.HandlerFunc {
+func CreateInvoice() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 	}
