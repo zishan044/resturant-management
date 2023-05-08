@@ -63,7 +63,7 @@ func GetInvoice() gin.HandlerFunc {
 
 		var invoiceView InvoiceViewFormat
 
-		orderItems, err := itemsByOrder(invoice.Order_id)
+		orderItems, _ := itemsByOrder(invoice.Order_id)
 		invoiceView.Order_id = invoice.Order_id
 
 		invoiceView.Payment_due_date = invoice.Payment_due_date
@@ -90,6 +90,7 @@ func CreateInvoice() gin.HandlerFunc {
 		var invoice models.Invoice
 		if err := c.BindJSON(&invoice); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			defer cancel()
 			return
 		}
 
@@ -137,21 +138,22 @@ func UpdateInvoice() gin.HandlerFunc {
 
 		if err := c.BindJSON(&invoice); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "body format incorrect"})
+			defer cancel()
 			return
 		}
 
 		var updateObj primitive.D
 
 		if invoice.Payment_method != nil {
-			updateObj = append(updateObj, bson.E{"payment_method", invoice.Payment_method})
+			updateObj = append(updateObj, bson.E{Key: "payment_method", Value: invoice.Payment_method})
 		}
 
 		if invoice.Payment_status != nil {
-			updateObj = append(updateObj, bson.E{"payment_status", invoice.Payment_status})
+			updateObj = append(updateObj, bson.E{Key: "payment_status", Value: invoice.Payment_status})
 		}
 
 		invoice.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		updateObj = append(updateObj, bson.E{"updated_at", invoice.Updated_at})
+		updateObj = append(updateObj, bson.E{Key: "updated_at", Value: invoice.Updated_at})
 
 		status := "PENDING"
 		if invoice.Payment_status == nil {
@@ -171,7 +173,7 @@ func UpdateInvoice() gin.HandlerFunc {
 			ctx,
 			filter,
 			bson.D{
-				{"$set", updateObj},
+				{Key: "$set", Value: updateObj},
 			},
 			&opt,
 		)

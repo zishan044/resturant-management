@@ -43,6 +43,7 @@ func GetOrder() gin.HandlerFunc {
 		var order models.Order
 		if err := c.BindJSON(&order); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "request body not formatted properly"})
+			defer cancel()
 			return
 		}
 
@@ -118,6 +119,7 @@ func UpdateOrder() gin.HandlerFunc {
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
 
 		if order.Table_id != nil {
 			err := tableCollection.FindOne(ctx, bson.M{"table_id": order.Table_id}).Decode(&table)

@@ -69,6 +69,7 @@ func GetOrderItem() gin.HandlerFunc {
 		err := orderItemCollection.FindOne(ctx, bson.M{"order_item_id": orderItemId}).Decode(&orderItem)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while getting order item"})
+			defer cancel()
 			return
 		}
 		defer cancel()

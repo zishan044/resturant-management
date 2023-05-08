@@ -37,16 +37,15 @@ func GetFoods() gin.HandlerFunc {
 		}
 
 		startIndex := (page - 1) * recordsPerPage
-		startIndex, err = strconv.Atoi(c.Query("startIndex"))
 
-		matchStage := bson.D{{"$match", bson.D{{}}}}
-		groupStage := bson.D{{"$group", bson.D{{"_id", "null"}}}, {"total_count", bson.D{{"$sum", "1"}}}, {"data", bson.D{{"$push", "$$ROOT"}}}}
+		matchStage := bson.D{{Key: "$match", Value: bson.D{{}}}}
+		groupStage := bson.D{{Key: "$group", Value: bson.D{{Key: "_id", Value: "null"}}}, {Key: "total_count", Value: bson.D{{Key: "$sum", Value: "1"}}}, {Key: "data", Value: bson.D{{Key: "$push", Value: "$$ROOT"}}}}
 		projectStage := bson.D{
 			{
-				"$project", bson.D{
-					{"id", 0},
-					{"total_count", 1},
-					{"food_items", bson.D{{"$slice", []interface{}{"$data", startIndex, recordsPerPage}}}},
+				Key: "$project", Value: bson.D{
+					{Key: "id", Value: 0},
+					{Key: "total_count", Value: 1},
+					{Key: "food_items", Value: bson.D{{Key: "$slice", Value: []interface{}{"$data", startIndex, recordsPerPage}}}},
 				},
 			},
 		}
@@ -92,11 +91,13 @@ func GetFood() gin.HandlerFunc {
 func CreateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
 		var menu models.Menu
 		var food models.Food
 
 		if err := c.BindJSON(&food); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			defer cancel()
 			return
 		}
 
@@ -113,8 +114,8 @@ func CreateFood() gin.HandlerFunc {
 			return
 		}
 
-		food.Created_at, err = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		food.Updated_at, err = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		food.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		food.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		food.ID = primitive.NewObjectID()
 		food.Food_id = food.ID.Hex()
 		num := toFixed(*food.Price, 2)
@@ -138,6 +139,7 @@ func UpdateFood() gin.HandlerFunc {
 
 		if err := c.BindJSON(&food); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			defer cancel()
 			return
 		}
 
