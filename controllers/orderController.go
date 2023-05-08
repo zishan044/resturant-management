@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,8 +17,6 @@ import (
 
 var orderCollection *mongo.Collection = database.OpenCollection(database.Client, "orders")
 var tableCollection *mongo.Collection = database.OpenCollection(database.Client, "tables")
-
-var validate = validator.New()
 
 func GetOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
