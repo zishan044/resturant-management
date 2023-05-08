@@ -20,7 +20,7 @@ import (
 
 var foodCollection *mongo.Collection = database.OpenCollection(database.Client, "foods")
 var menuCollection *mongo.Collection = database.OpenCollection(database.Client, "menus")
-var validate := validator.New()
+var validate = validator.New()
 
 func GetFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
